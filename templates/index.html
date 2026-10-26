@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Resume AI</title>
+  <style>
+    :root { color-scheme: light; font-family: system-ui, sans-serif; color: #172033; background: #f4f6fb; }
+    body { max-width: 820px; margin: 3rem auto; padding: 0 1rem; }
+    main { background: white; padding: 2rem; border-radius: 1rem; box-shadow: 0 8px 30px #17203312; }
+    h1 { margin-top: 0; }
+    textarea { box-sizing: border-box; width: 100%; min-height: 190px; padding: 1rem; border: 1px solid #cbd2e1; border-radius: .6rem; font: inherit; }
+    button { margin: .8rem .5rem .8rem 0; padding: .7rem 1rem; border: 0; border-radius: .5rem; background: #3348c5; color: white; font: inherit; cursor: pointer; }
+    button:disabled { opacity: .6; cursor: wait; }
+    #result { white-space: pre-wrap; overflow-wrap: anywhere; background: #f4f6fb; padding: 1rem; border-radius: .6rem; min-height: 2rem; }
+    .muted { color: #586174; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Resume AI</h1>
+    <p class="muted">Classify a resume or find semantically similar dataset entries.</p>
+    <label for="resume">Resume text or search query</label>
+    <textarea id="resume" maxlength="50000" placeholder="Paste resume text here..."></textarea>
+    <div>
+      <button id="classify" type="button">Classify resume</button>
+      <button id="search" type="button">Find similar resumes</button>
+    </div>
+    <h2>Result</h2>
+    <pre id="result" aria-live="polite">Results will appear here.</pre>
+  </main>
+  <script>
+    const input = document.querySelector("#resume");
+    const output = document.querySelector("#result");
+    const buttons = document.querySelectorAll("button");
+
+    async function submit(path) {
+      const text = input.value.trim();
+      if (!text) {
+        output.textContent = "Enter resume text or a search query first.";
+        return;
+      }
+      buttons.forEach((button) => { button.disabled = true; });
+      output.textContent = "Loading model and processing request...";
+      try {
+        const response = await fetch(path, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text }),
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || `Request failed (${response.status})`);
+        output.textContent = JSON.stringify(data, null, 2);
+      } catch (error) {
+        output.textContent = error.message;
+      } finally {
+        buttons.forEach((button) => { button.disabled = false; });
+      }
+    }
+
+    document.querySelector("#classify").addEventListener("click", () => submit("/api/classify-resume"));
+    document.querySelector("#search").addEventListener("click", () => submit("/api/search"));
+  </script>
+</body>
+</html>

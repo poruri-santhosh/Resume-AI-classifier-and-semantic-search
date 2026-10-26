@@ -1,0 +1,8 @@
+Flask>=3.0,<4.0
+datasets>=2.19
+numpy>=1.26
+psycopg[binary]>=3.2
+python-dotenv>=1.0
+qdrant-client>=1.9
+scikit-learn>=1.4
+sentence-transformers>=3.0
